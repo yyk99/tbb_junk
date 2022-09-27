@@ -1,4 +1,5 @@
 # tbb_junk
 Source code and examples for TBB
 
-cmake .. -DCMAKE_CXX_COMPILER=icc
+$ . ~/intel/sw_dev_tools/bin/iccvars.sh intel64
+$ cmake .. -DCMAKE_CXX_COMPILER=icc
