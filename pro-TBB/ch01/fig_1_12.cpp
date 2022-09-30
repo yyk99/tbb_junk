@@ -25,8 +25,13 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <vector>
 #include <tbb/tbb.h>
+#if __has_include(<pstl/algorithm>)
 #include <pstl/algorithm>
 #include <pstl/execution>
+#else
+#   include <algorithm>
+#   include <execution>
+#endif
 #include "ch01.h"
 
 using ImagePtr = std::shared_ptr<ch01::Image>;
@@ -45,7 +50,7 @@ ImagePtr applyGamma(ImagePtr image_ptr, double gamma) {
     [&in_rows, &out_rows, width, gamma](int i) {
       auto in_row = in_rows[i];
       auto out_row = out_rows[i];
-      std::transform(pstl::execution::unseq, in_row, in_row+width, 
+      std::transform(std::execution::par_unseq, in_row, in_row+width, 
         out_row, [gamma](const ch01::Image::Pixel& p) {
           double v = 0.3*p.bgra[2] + 0.59*p.bgra[1] + 0.11*p.bgra[0];
           double res = pow(v, gamma);
@@ -70,7 +75,7 @@ ImagePtr applyTint(ImagePtr image_ptr, const double *tints) {
     [&in_rows, &out_rows, width, tints](int i) {
       auto in_row = in_rows[i];
       auto out_row = out_rows[i];
-      std::transform(pstl::execution::unseq, in_row, in_row+width, 
+      std::transform(std::execution::par_unseq, in_row, in_row+width, 
         out_row, [tints](const ch01::Image::Pixel& p) {
           std::uint8_t b = (double)p.bgra[0] + 
                            (ch01::MAX_BGR_VALUE-p.bgra[0])*tints[0];
@@ -95,15 +100,14 @@ void fig_1_12(std::vector<ImagePtr>& image_vector) {
   tbb::flow::graph g;
 
   int i = 0;
-  tbb::flow::source_node<ImagePtr> src(g, 
-    [&i, &image_vector] (ImagePtr& out) -> bool {
-      if ( i < image_vector.size() ) {
-        out = image_vector[i++];
-        return true;
-      } else {
-        return false;
-      }
-    }, false);
+  tbb::flow::input_node<ImagePtr> src(g, 
+    [&i, &image_vector](tbb::flow_control& fc) -> ImagePtr {
+        if (i < image_vector.size()) {
+            return image_vector[i++];
+        }
+        fc.stop();
+        return {};
+    });
 
   tbb::flow::function_node<ImagePtr, ImagePtr> gamma(g, 
     tbb::flow::unlimited,
@@ -138,23 +142,26 @@ void writeImage(ImagePtr image_ptr) {
 }
 
 int main(int argc, char* argv[]) {
+    tbb::tick_count t00 = tbb::tick_count::now();
   std::vector<ImagePtr> image_vector;
 
   for ( int i = 2000; i < 20000000; i *= 10 ) 
     image_vector.push_back(ch01::makeFractalImage(i));
 
-  // warmup the scheduler
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), 
-    [](int) {
-      tbb::tick_count t0 = tbb::tick_count::now();
-      while ((tbb::tick_count::now() - t0).seconds() < 0.01);
-    }
-  );
+  // warm up the scheduler
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+    tbb::tick_count t0 = tbb::tick_count::now();
+    while ((tbb::tick_count::now() - t0).seconds() < 0.01);
+  });
 
   tbb::tick_count t0 = tbb::tick_count::now();
   fig_1_12(image_vector);
   std::cout << "Time : " << (tbb::tick_count::now()-t0).seconds() 
             << " seconds" << std::endl;
+
+    std::cout << "Total Time : " << (tbb::tick_count::now() - t00).seconds()
+        << " seconds" << std::endl;
+
   return 0;
 }
 
