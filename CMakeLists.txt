@@ -9,16 +9,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(OpenCL )
+find_package(TBB REQUIRED)
 
-set (PSTLROOT "/home/yyk/intel/sw_dev_tools/pstl" CACHE PATH "...")
-set (TBBROOT "/home/yyk/intel/sw_dev_tools/tbb" CACHE PATH "...")
-set (TBB_LIBRARY_DIR "/home/yyk/intel/sw_dev_tools/tbb/lib" CACHE PATH "...")
-
-set (PSTL_INCLUDE ${PSTLROOT}/include)
-set (TBB_INCLUDE ${TBBROOT}/include)
-set (TBB_DEFINES TBB_SUPPRESS_DEPRECATED_MESSAGES)
-
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
@@ -58,15 +51,10 @@ macro (add_fig directory)
     # message(STATUS "add_executable(${exe_name} ${src})")
 
     add_executable(${exe_name} ${cpp})
-    target_compile_definitions(${exe_name} PRIVATE ${TBB_DEFINES})
-    target_include_directories(${exe_name} PRIVATE ${PSTL_INCLUDE} ${TBB_INCLUDE})
-    # target_link_directories(${exe_name} PRIVATE ${TBB_LIBRARY_DIR})
-    target_link_libraries(${exe_name} ${TBB_libs})
+    target_link_libraries(${exe_name} PRIVATE TBB::tbb)
+    target_compile_features(${exe_name} PRIVATE cxx_std_11)
   endforeach()
 endmacro(add_fig)
-
-link_directories(${TBB_LIBRARY_DIR})
-set (TBB_libs "-ltbb -ltbbmalloc" ${HWLOC_libs} Threads::Threads)
 
 add_fig("pro-TBB/ch01")
 add_fig("pro-TBB/ch02")
@@ -91,4 +79,3 @@ if(OpenCL_FOUND)
 endif()
 add_fig("pro-TBB/ch20")
 add_fig("pro-TBB/AppB")
-
