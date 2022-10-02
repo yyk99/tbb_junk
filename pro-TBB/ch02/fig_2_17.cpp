@@ -37,9 +37,9 @@ using PrimesList = std::list<PrimesValue>;
 bool isPrime(int n);
 
 void fig_2_17(PrimesList& values) {
-  tbb::parallel_do(values,
-    [](PrimesList::reference v) {
-      if (isPrime(v.first)) 
+  oneapi::tbb::parallel_for_each(values.begin(), values.end(),
+    [](PrimesList::reference v, tbb::feeder<PrimesValue>& feeder) {
+      if (isPrime(v.first))
         v.second = true;
     }
   );
@@ -53,7 +53,7 @@ void serialImpl(PrimesList& values) {
 }
 
 bool isPrime(int n) {
-  int e =  std::sqrt(n);
+  int e =  int(std::sqrt(n));
   std::vector<bool> p(e+1, true);
 
   for (int i = 2; i <= e; ++i) {
@@ -95,7 +95,7 @@ static PrimesList makePrimesList(const IntVector& vec) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
@@ -103,7 +103,7 @@ static void warmupTBB() {
 
 int main() {
   const int levels = 14;
-  const int N = std::pow(2, levels) - 1;
+  const int N = int(std::pow(2, levels) - 1);
   PrimesMap m;
   auto vec = makePrimesValues(N, m);
   PrimesList slist = makePrimesList(vec);
