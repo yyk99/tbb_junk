@@ -53,8 +53,14 @@ macro (add_fig directory)
     add_executable(${exe_name} ${cpp})
     target_link_libraries(${exe_name} PRIVATE TBB::tbb)
     target_compile_features(${exe_name} PRIVATE cxx_std_11)
+    set_target_properties(${exe_name}
+      PROPERTIES FOLDER "${dir}"
+    )
   endforeach()
 endmacro(add_fig)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
+
 
 add_fig("pro-TBB/ch01")
 add_fig("pro-TBB/ch02")
@@ -79,3 +85,6 @@ if(OpenCL_FOUND)
 endif()
 add_fig("pro-TBB/ch20")
 add_fig("pro-TBB/AppB")
+
+add_fig("one-TBB/misc")
+
