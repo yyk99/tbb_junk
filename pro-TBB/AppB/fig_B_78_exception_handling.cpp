@@ -22,7 +22,9 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 */
 
-#include <tbb/tbb_exception.h>
+#if __has_include(<tbb/tbb_exception.h>)
+# include <tbb/tbb_exception.h>
+#endif
 #include <tbb/parallel_for.h>
 #include <vector>
 #include <iostream>

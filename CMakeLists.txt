@@ -36,6 +36,11 @@ if(NOT OpenCL_FOUND)
     )
 endif()
 
+list(APPEND tbbmalloc_required
+  fig_B_48_fixed_pool.cpp
+  fig_B_48_memory_pool.cpp
+)
+
 macro (add_fig directory)
   file(GLOB source_files "${directory}/*.cpp")
   #  list(REMOVE_ITEM ${source_files} pro-TBB/ch02/lodepng.h  pro-TBB/ch03/lodepng.h )
@@ -52,6 +57,9 @@ macro (add_fig directory)
 
     add_executable(${exe_name} ${cpp})
     target_link_libraries(${exe_name} PRIVATE TBB::tbb)
+    if (src IN_LIST tbbmalloc_required)
+      target_link_libraries(${exe_name} PRIVATE TBB::tbbmalloc)
+    endif()
     target_compile_features(${exe_name} PRIVATE cxx_std_11)
     set_target_properties(${exe_name}
       PROPERTIES FOLDER "${dir}"
@@ -87,4 +95,9 @@ add_fig("pro-TBB/ch20")
 add_fig("pro-TBB/AppB")
 
 add_fig("one-TBB/misc")
+
+set(SOLUTION_FILES
+  .editorconfig
+  )
+add_custom_target( GlobalFiles SOURCES ${SOLUTION_FILES})
 

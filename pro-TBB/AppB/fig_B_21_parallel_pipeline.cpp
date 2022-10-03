@@ -28,7 +28,7 @@ SPDX-License-Identifier: MIT
 #include <tbb/tbb.h>
 
 tbb::spin_mutex mylock;
-tbb::atomic<int> counter = 0;
+std::atomic<int> counter = 0;
 
 void hw(int x, int v) {
   int mycount = counter++;
@@ -40,18 +40,18 @@ int main( int argc, char *argv[] ) {
   tbb::parallel_pipeline(
     6,
     tbb::make_filter<void,int>(
-       tbb::filter::parallel,[&](tbb::flow_control& fc)->int
+       tbb::filter_mode::parallel,[&](tbb::flow_control& fc)->int
                                           { hw(1,0);
                                             if (!cdown) { fc.stop(); return 0; }
                                             return 1000 * cdown--;  }) &
     tbb::make_filter<int,float>(
-       tbb::filter::parallel,[](int i)    { hw(2,i);      return ++i;     }) &
+       tbb::filter_mode::parallel,[](int i)    { hw(2,i);      return ++i;     }) &
     tbb::make_filter<float,float>(
-       tbb::filter::parallel,[](float f)  { hw(3,(int)f); return f+1.0f;  }) &
+       tbb::filter_mode::parallel,[](float f)  { hw(3,(int)f); return f+1.0f;  }) &
     tbb::make_filter<float,int>(
-       tbb::filter::parallel,[](float f)  { hw(4,(int)f); return (int)f+1;}) &
+       tbb::filter_mode::parallel,[](float f)  { hw(4,(int)f); return (int)f+1;}) &
     tbb::make_filter<int,void>(
-       tbb::filter::parallel,[](int i)    { hw(5,i);                      })
+       tbb::filter_mode::parallel,[](int i)    { hw(5,i);                      })
   );
   return 0;
 }

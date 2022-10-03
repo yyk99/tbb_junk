@@ -22,22 +22,19 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 */
 
-#include <tbb/task_scheduler_init.h>
+#include <tbb/task_arena.h>
 
 #define XYZZY(FLAG) \
   printf(FLAG " default threads = %d; ", \
-	 tbb::task_scheduler_init::default_num_threads()); \
-  printf(my_init.is_active()?"TBB activate\n":"TBB not active\n");
+	 tbb::this_task_arena::max_concurrency()); \
+  /* printf(my_init.is_active()?"TBB activate\n":"TBB not active\n") */;
 
 int main( int argc, char *argv[] ) {
   {
-    tbb::task_scheduler_init
-      my_init(tbb::task_scheduler_init::deferred);
-    XYZZY("AA");   my_init.initialize(10);
+    XYZZY("AA");  
     XYZZY("AB");
   }
   {
-    tbb::task_scheduler_init my_init;
     XYZZY("BB");
     // if this is used:
     // my_init.initialize(24);
@@ -45,8 +42,8 @@ int main( int argc, char *argv[] ) {
     // Assertion !my_scheduler failed...
     // Detailed description: task_scheduler_init already initialized
     // Abort trap: 6
-    XYZZY("BC");   my_init.terminate();
-    XYZZY("BD");   my_init.initialize(90);
+    XYZZY("BC");   //my_init.terminate();
+    XYZZY("BD");   //my_init.initialize(90);
     XYZZY("BE");
   }
   return 0;

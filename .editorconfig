@@ -1,6 +1,10 @@
 # Visual Studio generated .editorconfig file with C++ settings.
 root = true
 
+[CMakeLists.txt]
+indent_style = space
+indent_size = 2
+
 [*.{c++,cc,cpp,cppm,cxx,h,h++,hh,hpp,hxx,inl,ipp,ixx,tlh,tli}]
 indent_style = space
 indent_size = 2
