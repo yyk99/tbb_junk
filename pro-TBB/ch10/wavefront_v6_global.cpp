@@ -25,6 +25,7 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <tbb/tick_count.h>
 #include <tbb/task.h>
+#include <tbb/task_scheduler_init.h>
 #include <atomic>
 /*#include <unistd.h>*/
 #include <vector>
@@ -110,7 +111,7 @@ int main (int argc, char **argv)
       }
   counters[n+1] = 0;
 
-  //tbb::task_scheduler_init init(nth);
+  tbb::task_scheduler_init init(nth);
   common::warmupTBB(0.01, nth);
 
   t0 = tbb::tick_count::now();

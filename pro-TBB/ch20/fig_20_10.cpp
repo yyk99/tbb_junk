@@ -39,10 +39,10 @@ class PinningObserver : public tbb::task_scheduler_observer {
   hwloc_obj_t numa_node;
   int numa_id;
   int num_nodes;
-  std::atomic<int> thds_per_node;
-  std::atomic<int> masters_that_entered;
-  std::atomic<int> workers_that_entered;
-  std::atomic<int> threads_pinned;
+  tbb::atomic<int> thds_per_node;
+  tbb::atomic<int> masters_that_entered;
+  tbb::atomic<int> workers_that_entered;
+  tbb::atomic<int> threads_pinned;
 public:
   PinningObserver(tbb::task_arena& arena, hwloc_topology_t& _topo,
                   int _numa_id, int _thds_per_node)
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
   alloc_mem_per_node(topo, data, doubles_per_node);
 
   //* One master thread per NUMA node
-  //tbb::task_scheduler_init init{(thds_per_node-1)*num_nodes};
+  tbb::task_scheduler_init init{(thds_per_node-1)*num_nodes};
   auto t = tbb::tick_count::now();
   alloc_thr_per_node(topo, data, vsize/num_nodes, thds_per_node);
   double ts = (tbb::tick_count::now() - t).seconds();

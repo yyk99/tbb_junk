@@ -27,7 +27,8 @@ SPDX-License-Identifier: MIT
 #include <algorithm>
 #include <random>
 #include <tbb/tick_count.h>
-#include <atomic>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/atomic.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
   // Initialize histogram
   std::vector<int> hist(num_bins);
 
-  //tbb::task_scheduler_init init{nth};
+  tbb::task_scheduler_init init{nth};
 
   // Serial execution
   tbb::tick_count t0 = tbb::tick_count::now();

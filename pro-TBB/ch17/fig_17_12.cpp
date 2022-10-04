@@ -79,7 +79,7 @@ void bigObjectCopy() {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), 
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), 
     [](int) {
       spinWaitForAtLeast(0.001);
     }

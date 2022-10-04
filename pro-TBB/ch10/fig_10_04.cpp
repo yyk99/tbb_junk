@@ -23,6 +23,7 @@ SPDX-License-Identifier: MIT
 */
 
 #include <iostream>
+#include <tbb/task_scheduler_init.h>
 #include <tbb/parallel_invoke.h>
 #include <tbb/tick_count.h>
 
@@ -51,7 +52,7 @@ int main(int argc, char** argv)
 {
   int n = 30;
   int nth = 4;
-  //tbb::task_scheduler_init init{nth};
+  tbb::task_scheduler_init init{nth};
 
   auto t0 = tbb::tick_count::now();
   long fib_s = fib(n);

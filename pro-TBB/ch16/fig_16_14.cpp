@@ -65,7 +65,7 @@ void resetA(int N, double *a) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   int M = 10000;
   int N = 100000;
 
-  std::cout << "P = " << tbb::this_task_arena::max_concurrency() 
+  std::cout << "P = " << tbb::task_scheduler_init::default_num_threads() 
             << std::endl << "N = " << N 
             << std::endl << "M = " << M << std::endl;
 

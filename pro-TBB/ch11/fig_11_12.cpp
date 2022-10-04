@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT
 void doWork(const std::string& name, double seconds);
 
 void fig_11_12() {
-  const int P = tbb::this_task_arena::max_concurrency();
+  const int P = tbb::task_scheduler_init::default_num_threads();
   int N = 10*P;
 
   auto mp = tbb::global_control::max_allowed_parallelism;
@@ -44,7 +44,7 @@ void fig_11_12() {
   tbb::task_arena a(3*nt/4);
 
   std::thread t([=]() {
-    //tbb::task_scheduler_init i1(nt/4);
+    tbb::task_scheduler_init i1(nt/4);
     tbb::parallel_for(0, N, [](int) { doWork("std::thread pfor", 0.01); });
   });
 
@@ -57,14 +57,14 @@ void fig_11_12() {
 }
 
 thread_local int my_tid = -1;
-const int P = tbb::this_task_arena::max_concurrency();
+const int P = tbb::task_scheduler_init::default_num_threads();
 
 std::vector<std::set<std::string>> tid_regions(3*P);
-std::atomic<int> next_tid;
+tbb::atomic<int> next_tid;
 
 void noteParticipation(const std::string& name) {
   if (my_tid == -1) {
-    my_tid = next_tid++;
+    my_tid = next_tid.fetch_and_increment();
   }
   tid_regions[my_tid].insert(name);
 }
@@ -83,7 +83,7 @@ void dump_participation() {
       m[n] += 1;
     }
   }
-  std::cout << "There are " << tbb::this_task_arena::max_concurrency() << " logical cores." << std::endl;
+  std::cout << "There are " << tbb::task_scheduler_init::default_num_threads() << " logical cores." << std::endl;
   for (auto& kv : m) {
     std::cout << kv.second << " threads participated in " << kv.first << std::endl;
   }

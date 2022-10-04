@@ -210,16 +210,15 @@ double fig_17_9(int N, double *a[3], double *b[3]) {
   tbb::tick_count t0 = tbb::tick_count::now();
   tbb::flow::graph g;
   int i = 0;
-  tbb::flow::input_node<FGMsg> initialize{ g, [&](tbb::flow_control& fc) -> FGMsg {
+  tbb::flow::source_node<FGMsg> initialize{g, [&](FGMsg& msg) -> bool {
     if (i < 3) {
-      FGMsg msg = {N, setArray(N, a[i]), setArray(N, b[i])};
+      msg = {N, setArray(N, a[i]), setArray(N, b[i])};
       ++i;
-      return msg;
+      return true;
+    } else {
+      return false; 
     }
-    fc.stop();
-    return {};
-
-  } };
+  }, false};
   tbb::flow::function_node<FGMsg, FGMsg> transpose{g, tbb::flow::unlimited,
     [](const FGMsg& msg) -> FGMsg {
       serialTranspose(msg.N, msg.a, msg.b);
@@ -247,17 +246,16 @@ double fgObliviousTranspose(int N, double *a[3], double *b[3], int cutoff) {
   tbb::tick_count t0 = tbb::tick_count::now();
   tbb::flow::graph g;
   int i = 0;
-  tbb::flow::input_node<FGMsg> initialize{g, [&](tbb::flow_control &fc) -> FGMsg {
+  tbb::flow::source_node<FGMsg> initialize{g, [&](FGMsg& msg) -> bool {
     if (i < 3) {
-      FGMsg msg = {N, setArray(N, a[i]), setArray(N, b[i])};
+      msg = {N, setArray(N, a[i]), setArray(N, b[i])};
       ++i;
-      return msg;
+      return true;
     }
     else {
-      fc.stop();
-      return {};
+      return false;
     }
-  }};
+  }, false};
   tbb::flow::function_node<FGMsg, FGMsg> transpose{g, tbb::flow::unlimited,
     [cutoff](const FGMsg& msg) -> FGMsg {
     obliviousTranspose(msg.N, msg.a, msg.b, cutoff);
@@ -285,17 +283,16 @@ double fgPforTranspose(int N, double *a[3], double *b[3], int gs) {
   tbb::tick_count t0 = tbb::tick_count::now();
   tbb::flow::graph g;
   int i = 0;
-  tbb::flow::input_node<FGMsg> initialize{g, [&](tbb::flow_control &fc) -> FGMsg {
+  tbb::flow::source_node<FGMsg> initialize{g, [&](FGMsg& msg) -> bool {
     if (i < 3) {
-      FGMsg msg = {N, setArray(N, a[i]), setArray(N, b[i])};
+      msg = {N, setArray(N, a[i]), setArray(N, b[i])};
       ++i;
-      return msg;
+      return true;
     }
     else {
-      fc.stop();
-      return {};
+      return false;
     }
-  }};
+  }, false};
   tbb::flow::function_node<FGMsg, FGMsg> transpose{g, tbb::flow::unlimited,
     [gs](const FGMsg& msg) -> FGMsg {
     int N = msg.N;
@@ -348,14 +345,11 @@ double fig_17_10(int N, double *a[3], double *b[3], int gs) {
 
   std::vector<RType> stack;
   stack.push_back(RType(0, N, gs, 0, N, gs));
-  tbb::flow::input_node<FGTiledMsg> initialize{g, [&](tbb::flow_control &fc) -> FGTiledMsg {
+  tbb::flow::source_node<FGTiledMsg> initialize{g, [&](FGTiledMsg& msg) -> bool {
     if (i < 3) {
       if (stack.empty()) {
         ++i;
-        if (i == 3) {
-          fc.stop();
-          return {};
-        }
+        if (i == 3) return false;
         stack.push_back(RType(0, N, gs, 0, N, gs));
       }
       RType r = stack.back();
@@ -364,13 +358,12 @@ double fig_17_10(int N, double *a[3], double *b[3], int gs) {
         RType rhs(r, tbb::split());
         stack.push_back(rhs);
       }
-      FGTiledMsg msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
-      return msg;
+      msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
+      return true;
     } else {
-      fc.stop();
-      return {};
+      return false;
     }
-  }};
+  }, false};
   tbb::flow::function_node<FGTiledMsg, FGTiledMsg> transpose{g, tbb::flow::unlimited,
     [](const FGTiledMsg& msg) {
     double *a = msg.a;
@@ -409,14 +402,11 @@ double fgTiledObliviousTranspose(int N, double *a[3], double *b[3], int gs, int 
 
   std::vector<RType> stack;
   stack.push_back(RType(0, N, gs, 0, N, gs));
-  tbb::flow::input_node<FGTiledMsg> initialize{g, [&](tbb::flow_control &fc) -> FGTiledMsg {
+  tbb::flow::source_node<FGTiledMsg> initialize{g, [&](FGTiledMsg& msg) -> bool {
     if (i < 3) {
       if (stack.empty()) {
         ++i;
-        if (i == 3) {
-          fc.stop();
-          return {};
-        }
+        if (i == 3) return false;
         stack.push_back(RType(0, N, gs, 0, N, gs));
       }
       RType r = stack.back();
@@ -425,13 +415,12 @@ double fgTiledObliviousTranspose(int N, double *a[3], double *b[3], int gs, int 
         RType rhs(r, tbb::split());
         stack.push_back(rhs);
       }
-      FGTiledMsg msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
-      return msg;
+      msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
+      return true;
     } else {
-      fc.stop();
-      return {};
+      return false;
     }
-  }};
+  }, false};
   tbb::flow::function_node<FGTiledMsg, FGTiledMsg> transpose{g, tbb::flow::unlimited,
     [cutoff](const FGTiledMsg& msg) {
     obliviousTranspose(msg.N, msg.r.rows().begin(), msg.r.rows().end(), 
@@ -462,14 +451,11 @@ double fgTiledPforTranspose(int N, double *a[3], double *b[3], int gs) {
 
   std::vector<RType> stack;
   stack.push_back(RType(0, N, gs, 0, N, gs));
-  tbb::flow::input_node<FGTiledMsg> initialize{g, [&](tbb::flow_control &fc) -> FGTiledMsg {
+  tbb::flow::source_node<FGTiledMsg> initialize{g, [&](FGTiledMsg& msg) -> bool {
     if (i < 3) {
       if (stack.empty()) {
         ++i;
-        if (i == 3) {
-          fc.stop();  
-          return {};
-        }
+        if (i == 3) return false;
         stack.push_back(RType(0, N, gs, 0, N, gs));
       }
       RType r = stack.back();
@@ -478,12 +464,12 @@ double fgTiledPforTranspose(int N, double *a[3], double *b[3], int gs) {
         RType rhs(r, tbb::split());
         stack.push_back(rhs);
       }
-      return {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
+      msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
+      return true;
     } else {
-      fc.stop();
-      return {};
+      return false;
     }
-  }};
+  }, false};
   tbb::flow::function_node<FGTiledMsg, FGTiledMsg> transpose{g, tbb::flow::unlimited,
     [](const FGTiledMsg& msg) {
     double *a = msg.a;

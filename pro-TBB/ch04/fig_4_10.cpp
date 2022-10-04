@@ -26,8 +26,8 @@ SPDX-License-Identifier: MIT
 #include <vector>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
+#include <pstl/execution>
+#include <pstl/algorithm>
 
 //
 // For best performance when using the Intel compiler use
@@ -48,7 +48,7 @@ void fig_4_10() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    std::transform(std::execution::par,
+    std::transform(pstl::execution::par,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -57,7 +57,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 4);
-    std::transform(std::execution::par_unseq,
+    std::transform(pstl::execution::par_unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -86,7 +86,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 1);
-    std::transform(std::execution::seq,
+    std::transform(pstl::execution::seq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -95,7 +95,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 2);
-    std::transform(std::execution::par_unseq,
+    std::transform(pstl::execution::unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -141,7 +141,7 @@ void validateResults(int num_trials, const std::vector<float>& a) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });

@@ -86,14 +86,14 @@ double deterministicReducePiExample(int num_intervals, int grainsize) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
 }
 
 int main() {
-  const int P = tbb::this_task_arena::max_concurrency();
+  const int P = tbb::task_scheduler_init::default_num_threads();
   int num_intervals = 1<<26;
   tbb::tick_count ts_0 = tbb::tick_count::now();
   double spi = serialPiExample(num_intervals);

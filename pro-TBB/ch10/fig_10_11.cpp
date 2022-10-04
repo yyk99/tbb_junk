@@ -25,6 +25,7 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <tbb/task.h>
 #include <tbb/tick_count.h>
+#include <tbb/task_scheduler_init.h>
 
 int cutoff = 30;
 
@@ -78,22 +79,22 @@ long parallel_fib(long n) {
 
 int main(int argc, char** argv)
 {
-  int n = 30;
-  int nth = 4;
+int n = 30;
+int nth = 4;
 
-  //tbb::task_scheduler_init init{ nth };
+tbb::task_scheduler_init init{nth};
 
-  auto t0 = tbb::tick_count::now();
-  long fib_s = fib(n);
-  auto t1 = tbb::tick_count::now();
-  long fib_p = parallel_fib(n);
-  auto t2 = tbb::tick_count::now();
-  double t_s = (t1 - t0).seconds();
-  double t_p = (t2 - t1).seconds();
+auto t0 = tbb::tick_count::now();
+long fib_s = fib(n);
+auto t1 = tbb::tick_count::now();
+long fib_p = parallel_fib(n);
+auto t2 = tbb::tick_count::now();
+double t_s = (t1 - t0).seconds();
+double t_p = (t2 - t1).seconds();
 
-  std::cout << "SerialFib:   " << fib_s << " Time: " << t_s << "\n";
-  std::cout << "ParallelFib: " << fib_p << " Time: " << t_p << " Speedup: " << t_s / t_p << "\n";
-  return 0;
+std::cout << "SerialFib:   " << fib_s << " Time: " << t_s << "\n";
+std::cout << "ParallelFib: " << fib_p << " Time: " << t_p << " Speedup: " << t_s/t_p << "\n";
+return 0;
 }
 //g++ -o f fig_10_11.cpp -std=c++11 -O3 -ltbb -Wall -pedantic -ltbbmalloc_proxy
 // SerialFib:   102334155 Time: 0.522419

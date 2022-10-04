@@ -54,7 +54,7 @@ double fig_17_2(int num_trials, int N, double per_node_time) {
 }
 
 int main() {
-  const int P = tbb::this_task_arena::max_concurrency();
+  const int P = tbb::task_scheduler_init::default_num_threads();
   const int NUM_TRIALS = 2;
   const int H = 16;
   const int N = (1<<H) - 1;

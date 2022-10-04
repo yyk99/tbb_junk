@@ -31,29 +31,28 @@ static inline void spinWaitForAtLeast(double sec) {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), 
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), 
   [](int) {
     spinWaitForAtLeast(0.001);
   });
 }
 
 void fig_17_23() {
-  int P = tbb::this_task_arena::max_concurrency();
+  int P = tbb::task_scheduler_init::default_num_threads();
   tbb::concurrent_vector<std::string> trace;
   double spin_time = 1e-3;
   tbb::flow::graph g;
 
   int src_cnt = 0;
-  tbb::flow::input_node<int> source{g,
-    [&src_cnt, P, spin_time](tbb::flow_control &fc) -> int {
+  tbb::flow::source_node<int> source{g,
+    [&src_cnt, P, spin_time](int& i) -> bool {
        if (src_cnt < P) {
-         int i = src_cnt++;
+         i = src_cnt++;
          spinWaitForAtLeast(spin_time);
-         return i;
+         return true;
        }
-       fc.stop();
-       return {};
-    }
+       return false;
+    }, false
   };
 
   tbb::flow::function_node<int> unlimited_node(g, tbb::flow::unlimited,
@@ -85,22 +84,21 @@ void fig_17_23() {
 }
 
 void noMoonlighting() {
-  int P = tbb::this_task_arena::max_concurrency();
+  int P = tbb::task_scheduler_init::default_num_threads();
   tbb::concurrent_vector<std::string> trace;
   double spin_time = 1e-3;
   tbb::flow::graph g;
 
   int src_cnt = 0;
-  tbb::flow::input_node<int> source{g,
-    [&src_cnt, P, spin_time](tbb::flow_control &fc) -> int {
+  tbb::flow::source_node<int> source{g,
+    [&src_cnt, P, spin_time](int& i) -> bool {
        if (src_cnt < P) {
-         int i = src_cnt++;
+         i = src_cnt++;
          spinWaitForAtLeast(spin_time);
-         return i;
+         return true;
        }
-       fc.stop();
-       return {};
-    }
+       return false;
+    }, false
   };
 
   tbb::flow::function_node<int> unlimited_node{g, tbb::flow::unlimited,

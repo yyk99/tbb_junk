@@ -30,7 +30,6 @@ SPDX-License-Identifier: MIT
 #include <utility>
 #include <vector>
 #include <tbb/tbb.h>
-//#include <tbb/parallel_for_each.h>
 
 using PrimesValue = std::pair<int, bool>;
 
@@ -50,9 +49,9 @@ bool isPrime(int n);
 
 void fig_2_19(PrimesTreeElement::Ptr root) {
   PrimesTreeElement::Ptr tree_array[] = {root};
-  tbb::parallel_for_each(tree_array, 
+  tbb::parallel_do(tree_array,
     [](PrimesTreeElement::Ptr e, 
-      tbb::feeder<PrimesTreeElement::Ptr>& feeder) {
+      tbb::parallel_do_feeder<PrimesTreeElement::Ptr>& feeder) {
         if (e) {
           if (e->left) feeder.add(e->left);
           if (e->right) feeder.add(e->right);
@@ -129,7 +128,7 @@ static bool validatePrimesElem(PrimesTreeElement::Ptr e, PrimesMap& m) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });

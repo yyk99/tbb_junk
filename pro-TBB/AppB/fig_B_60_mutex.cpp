@@ -24,7 +24,8 @@ SPDX-License-Identifier: MIT
 
 #include <cstdio>
 #include <tbb/tick_count.h>
-#include <mutex>
+#include <tbb/mutex.h>
+#include <tbb/recursive_mutex.h>
 #include <tbb/spin_mutex.h>
 #include <tbb/queuing_mutex.h>
 #include <tbb/spin_rw_mutex.h>
@@ -33,8 +34,8 @@ SPDX-License-Identifier: MIT
 #include <tbb/null_rw_mutex.h>
 
 int main( int argc, char *argv[] ) {
-  std::mutex                            my_mutex_01;
-  std::recursive_mutex                  my_mutex_02;
+  tbb::mutex                            my_mutex_01;
+  tbb::recursive_mutex                  my_mutex_02;
   tbb::spin_mutex                       my_mutex_03;
   tbb::speculative_spin_mutex           my_mutex_04;
   tbb::queuing_mutex                    my_mutex_05;
@@ -44,33 +45,33 @@ int main( int argc, char *argv[] ) {
   tbb::null_mutex                       my_mutex_09;
   tbb::null_rw_mutex                    my_mutex_10;
   {
-    std::scoped_lock                     mylock01a(my_mutex_01);
+    tbb::mutex::scoped_lock                     mylock01a(my_mutex_01);
     // the following would stall because already locked the mutex
     // tbb::mutex::scoped_lock                  mylock01b(my_mutex_01);
-    std::scoped_lock           mylock02a(my_mutex_02);
+    tbb::recursive_mutex::scoped_lock           mylock02a(my_mutex_02);
     // recursion is allowed... so this does not stall...
-    std::scoped_lock           mylock02b(my_mutex_02);
+    tbb::recursive_mutex::scoped_lock           mylock02b(my_mutex_02);
     // recursion is allowed... so this does not stall...
-    std::scoped_lock           mylock02c(my_mutex_02);
+    tbb::recursive_mutex::scoped_lock           mylock02c(my_mutex_02);
     tbb::spin_mutex::scoped_lock                mylock03a(my_mutex_03);
     tbb::speculative_spin_mutex::scoped_lock    mylock04a(my_mutex_04);
     // reader...
-    std::scoped_lock             mylock06a(my_mutex_06);
+    tbb::spin_rw_mutex::scoped_lock             mylock06a(my_mutex_06);
     // the following would stall, really!
     // we already have locked the mutex from this thread
     // RW allows one lock per thread - this is not a recursive lock!
     // tbb::spin_rw_mutex::scoped_lock          mylock06c(my_mutex_06);
-    //std::scoped_lock mylock07a(my_mutex_07); // TODO:
+    tbb::speculative_spin_rw_mutex::scoped_lock mylock07a(my_mutex_07);
     // writer...
     tbb::queuing_rw_mutex::scoped_lock          mylock08a(my_mutex_08,true);
-    std::scoped_lock                mylock09a(my_mutex_09);
+    tbb::null_mutex::scoped_lock                mylock09a(my_mutex_09);
     // null does nothing... so this does not stall...
-    std::scoped_lock                mylock09b(my_mutex_09);
-    std::scoped_lock             mylock10a(my_mutex_10);
+    tbb::null_mutex::scoped_lock                mylock09b(my_mutex_09);
+    tbb::null_rw_mutex::scoped_lock             mylock10a(my_mutex_10);
     // null does nothing... so this does not stall...
-    std::scoped_lock             mylock10b(my_mutex_10);
+    tbb::null_rw_mutex::scoped_lock             mylock10b(my_mutex_10);
     // null does nothing... so this does not stall...
-    std::scoped_lock             mylock10c(my_mutex_10);
+    tbb::null_rw_mutex::scoped_lock             mylock10c(my_mutex_10);
 
     printf("Locks acquired!\nHello, World!\n");
   }

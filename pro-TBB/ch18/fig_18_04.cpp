@@ -25,24 +25,22 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <tbb/flow_graph.h>
 #include <tbb/tick_count.h>
-//#include <tbb/compat/thread>
+#include <tbb/compat/thread>
 
 void async_world() {
   tbb::flow::graph g;
   bool n = false;
 
   //Source node:
-  tbb::flow::input_node<int> in_node{g,
-    [&](tbb::flow_control &fc) -> int {
-      if (n) {
-        fc.stop();
-        return {};
-      }
+  tbb::flow::source_node<int> in_node{g,
+    [&](int& a) {
+      if (n) return false;
       std::cout << "Async ";
-      int a = 10;
+      a = 10;
       n = true;
-      return a;
-    }
+      return true;
+    },
+    false
   };
 
   //Danger! Don't do this!

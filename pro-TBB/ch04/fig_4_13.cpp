@@ -26,11 +26,9 @@ SPDX-License-Identifier: MIT
 #include <limits>
 #include <math.h>
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
-#include <numeric>
-
-#include "counting_iterator.h"
+#include <pstl/execution>
+#include <pstl/algorithm>
+#include <pstl/numeric>
 
 //
 // For best performance when using the Intel compiler use
@@ -42,8 +40,8 @@ const int num_intervals = 1<<22;
 
 float fig_4_13() {
   constexpr const float dx = 1.0 / num_intervals;
-  float sum = (float)std::transform_reduce(
-    /* policy */ std::execution::par_unseq,
+  float sum = std::transform_reduce(
+    /* policy */ pstl::execution::par_unseq,
     /* first */ tbb::counting_iterator<int>(0),
     /* last */  tbb::counting_iterator<int>(num_intervals),
     /* init = */ 0.0,
@@ -53,8 +51,8 @@ float fig_4_13() {
     },
     /* transform */
     [=](int i) -> float {
-      float x = float((i + 0.5)*dx);
-      float h = float(sqrt(1 - x*x));
+      float x = (i + 0.5)*dx;
+      float h = sqrt(1 - x*x);
       return h*dx;
     }
   );
@@ -62,7 +60,7 @@ float fig_4_13() {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.001);
   });
@@ -117,10 +115,10 @@ void run_pi_template(const Policy& p, const std::string& name) {
 }
 
 int main() {
-  run_pi_template(std::execution::seq, "seq");
-  run_pi_template(std::execution::par_unseq, "unseq"); // TODO:
-  run_pi_template(std::execution::par, "par");
-  run_pi_template(std::execution::par_unseq, "par_unseq");
+  run_pi_template(pstl::execution::seq, "seq");
+  run_pi_template(pstl::execution::unseq, "unseq");
+  run_pi_template(pstl::execution::par, "par");
+  run_pi_template(pstl::execution::par_unseq, "par_unseq");
   run_fig_4_13();
   std::cout << "Done." << std::endl;
   return 0;

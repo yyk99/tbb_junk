@@ -25,6 +25,7 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <tbb/tick_count.h>
 #include <tbb/task.h>
+#include <tbb/task_scheduler_init.h>
 #include <atomic>
 /*#include <unistd.h>*/
 #include <vector>
@@ -34,7 +35,7 @@ double foo (int gs, double a, double b, double c){
       double x = (a + b + c)/3;
       //common::spinWaitForAtLeast(gs*(double)1.0e-9);
       int dummy=0;
-      for (int i=0; i<gs; i++) dummy += int((a + b + c)/4);
+      for (int i=0; i<gs; i++) dummy += (a + b + c)/4;
       //avoid dead code elimination:
       if (!dummy) common::spinWaitForAtLeast((dummy+1)*1e-9);
       return x;
@@ -86,7 +87,7 @@ int main (int argc, char **argv)
   auto t1 = tbb::tick_count::now();
   auto t_ser = (t1-t0).seconds()*1000;
 
-  //tbb::task_scheduler_init init(nth);
+  tbb::task_scheduler_init init(nth);
   common::warmupTBB(0.01, nth);
   // Build DAG of Cells
   std::vector<Cell*> DAG(size);

@@ -44,14 +44,14 @@ int main( int argc, char *argv[] ) {
 
   counter = 0;
   PN(myarray);
-  tbb::parallel_for_each( myarray.begin(),myarray.end(),
+  tbb::parallel_do( myarray.begin(),myarray.end(),
 		    [](int xyzzy){ PV(xyzzy); }
 		  );
   printf("\n");
 
   counter = 0;
   PN(disarray);
-  tbb::parallel_for_each( disarray,
+  tbb::parallel_do( disarray,
 		    [](int xyzzy){ PV(xyzzy); }
 		  );
   printf("\n\n");

@@ -34,16 +34,16 @@ SPDX-License-Identifier: MIT
 void doWork(const std::string& name, double seconds);
 
 void fig_11_16() {
-  const int P = tbb::this_task_arena::max_concurrency();
+  const int P = tbb::task_scheduler_init::default_num_threads();
   int N = 10*P;
 
   {
     std::thread t1a([=]() {
-      //tbb::task_scheduler_init init(P);
+      tbb::task_scheduler_init init(P);
       tbb::parallel_for(0, N, [](int) { doWork("t1a(P) pfor", 0.01); });
     });
     std::thread t1b([=]() {
-      //tbb::task_scheduler_init init(2*P);
+      tbb::task_scheduler_init init(2*P);
       tbb::parallel_for(0, N, [](int) { doWork("t1b(2P) pfor", 0.01); });
     });
     t1a.join();
@@ -52,11 +52,11 @@ void fig_11_16() {
 
   {
     std::thread t2a([=]() {
-      //tbb::task_scheduler_init init(2*P);
+      tbb::task_scheduler_init init(2*P);
       tbb::parallel_for(0, N, [](int) { doWork("t2a(2P) pfor", 0.01); });
     });
     std::thread t2b([=]() {
-      //tbb::task_scheduler_init init(P);
+      tbb::task_scheduler_init init(P);
       tbb::parallel_for(0, N, [](int) { doWork("t2b(P) pfor", 0.01); });
     });
     t2a.join();
@@ -65,14 +65,14 @@ void fig_11_16() {
 }
 
 thread_local int my_tid = -1;
-const int P = tbb::this_task_arena::max_concurrency();
+const int P = tbb::task_scheduler_init::default_num_threads();
 
 std::vector<std::set<std::string>> tid_regions(10*P);
-std::atomic<int> next_tid;
+tbb::atomic<int> next_tid;
 
 void noteParticipation(const std::string& name) {
   if (my_tid == -1) {
-    my_tid = next_tid++;
+    my_tid = next_tid.fetch_and_increment();
   }
   tid_regions[my_tid].insert(name);
 }
@@ -91,7 +91,7 @@ void dump_participation() {
       m[n] += 1;
     }
   }
-  std::cout << "There are " << tbb::this_task_arena::max_concurrency() << " logical cores." << std::endl;
+  std::cout << "There are " << tbb::task_scheduler_init::default_num_threads() << " logical cores." << std::endl;
   for (auto& kv : m) {
     std::cout << kv.second << " threads participated in " << kv.first << std::endl;
   }

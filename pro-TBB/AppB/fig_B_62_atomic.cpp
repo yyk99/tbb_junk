@@ -22,11 +22,11 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 */
 
-#include <atomic>
+#include <tbb/atomic.h>
 int main( int argc, char *argv[] ) {
   double value = 9.9;
-  std::atomic<double> y(value); // Not atomic
-  std::atomic<double> z;
+  tbb::atomic<double> y(value); // Not atomic
+  tbb::atomic<double> z;
   z=value;                      // Atomic assignment
   return 0;
 }

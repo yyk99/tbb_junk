@@ -39,14 +39,15 @@ void fig_1_10(const std::vector<ImagePtr>& image_vector) {
   tbb::flow::graph g;
 
   int i = 0;
-  tbb::flow::input_node<ImagePtr> src(g, 
-    [&i, &image_vector](tbb::flow_control& fc) -> ImagePtr {
-        if (i < image_vector.size()) {
-            return image_vector[i++];
-        }
-        fc.stop();
-        return {};
-    });
+  tbb::flow::source_node<ImagePtr> src(g, 
+    [&i, &image_vector] (ImagePtr& out) -> bool {
+      if ( i < image_vector.size() ) {
+        out = image_vector[i++];
+        return true;
+      } else {
+        return false;
+      }
+    }, false);
 
   tbb::flow::function_node<ImagePtr, ImagePtr> gamma(g, 
     tbb::flow::unlimited,
@@ -131,26 +132,21 @@ void writeImage(ImagePtr image_ptr) {
 }
 
 int main(int argc, char* argv[]) {
-  tbb::tick_count t00 = tbb::tick_count::now();
   std::vector<ImagePtr> image_vector;
-  image_vector.reserve(20000000); // YYK
-  for (int i = 2000; i < 20000000; i *= 10)
+
+  for ( int i = 2000; i < 20000000; i *= 10 ) 
     image_vector.push_back(ch01::makeFractalImage(i));
 
-  // warm up the scheduler
-  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
+  // warmup the scheduler
+  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
-    });
+  });
 
   tbb::tick_count t0 = tbb::tick_count::now();
   fig_1_10(image_vector);
-  std::cout << "Time : " << (tbb::tick_count::now() - t0).seconds()
-    << " seconds" << std::endl;
-
-  std::cout << "Total Time : " << (tbb::tick_count::now() - t00).seconds()
-    << " seconds" << std::endl;
-
+  std::cout << "Time : " << (tbb::tick_count::now()-t0).seconds() 
+            << " seconds" << std::endl;
   return 0;
 }
 

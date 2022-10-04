@@ -25,7 +25,8 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <tbb/tick_count.h>
 #include <tbb/task.h>
-#include <atomic>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/atomic.h>
 /*#include <unistd.h>*/
 #include <vector>
 #include "utils.h"
@@ -46,11 +47,11 @@ class Cell: public tbb::task {
   int n;
   int gs;
   std::vector<double>& A;
-  std::vector<std::atomic<int>>& counters;
+  std::vector<tbb::atomic<int>>& counters;
 public:
   Cell(int i_ ,int j_, int n_, int gs_,
        std::vector<double>& A_,
-       std::vector<std::atomic<int>>& counters_) :
+       std::vector<tbb::atomic<int>>& counters_) :
        i{i_},j{j_},n{n_},gs{gs_},A{A_},counters{counters_} {}
   task* execute(){
     A[i*n+j] = foo(gs, A[i*n+j], A[(i-1)*n+j], A[i*n+j-1]);
@@ -87,7 +88,7 @@ int main (int argc, char **argv)
   int size = n*n;
   std::vector<double> a_ser(size);
   std::vector<double> a_par(size);
-  std::vector<std::atomic<int>> counters(size);
+  std::vector<tbb::atomic<int>> counters(size);
 
   //Initialize a_ser & a_par with dummy values
   for(int i=0; i<size; i++)
@@ -114,7 +115,7 @@ int main (int argc, char **argv)
       }
   counters[n+1] = 0;
 
-  //tbb::task_scheduler_init init(nth);
+  tbb::task_scheduler_init init(nth);
   common::warmupTBB(0.01, nth);
 
   t0 = tbb::tick_count::now();
