@@ -52,7 +52,7 @@ void fig_16_16(int N, Partitioner& p) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   int N = 1000;
   int M = 10;
 
-  std::cout << "P = " << tbb::task_scheduler_init::default_num_threads() 
+  std::cout << "P = " << tbb::this_task_arena::max_concurrency() 
             << std::endl << "M = " << M
             << std::endl << "N = " << N << std::endl;
 

@@ -35,13 +35,13 @@ void spinWaitForAtLeast(double sec) {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), 
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), 
   [](int) {
     spinWaitForAtLeast(0.001);
   });
 }
 
-tbb::atomic<int> bigObjectCount;
+std::atomic<int> bigObjectCount;
 int maxCount = 0;
 
 class BigObject {
@@ -50,13 +50,13 @@ class BigObject {
 public:
    BigObject() : id(-1) { } 
    BigObject(int i) : id(i) { 
-     int cnt = bigObjectCount.fetch_and_increment() + 1;
+     int cnt = bigObjectCount++ + 1;
      if (cnt > maxCount) 
        maxCount = cnt;
    }
    BigObject(const BigObject& b) : id(b.id) { }
    virtual ~BigObject() {
-     bigObjectCount.fetch_and_decrement();
+     bigObjectCount--;
    }
    int getId() const {return id;}
    int mergeIds(int id0, int id1) {return id = id1*100 + id0;}
@@ -118,24 +118,26 @@ void fig_17_33() {
   tbb::flow::graph g;
 
   int src1_count = 0;
-  tbb::flow::source_node<BigObjectPtr> source1{g, 
-  [&] (BigObjectPtr& m) -> bool {
+  tbb::flow::input_node<BigObjectPtr> source1{g, 
+  [&] (tbb::flow_control& fc) -> BigObjectPtr {
     if (src1_count < A_LARGE_NUMBER) {
-      m = std::make_shared<BigObject>(src1_count++);
-      return true;
+      auto m = std::make_shared<BigObject>(src1_count++);
+      return m;
     }
-    return false;
-  }, false};
+    fc.stop();
+    return {};
+  }};
 
   int src2_count = 0;
-  tbb::flow::source_node<BigObjectPtr> source2{g, 
-  [&] (BigObjectPtr& m) -> bool {
+  tbb::flow::input_node<BigObjectPtr> source2{g, 
+  [&] (tbb::flow_control& fc) -> BigObjectPtr {
     if (src2_count < A_LARGE_NUMBER) {
-      m = std::make_shared<BigObject>(src2_count++);
-      return true;
+      auto m = std::make_shared<BigObject>(src2_count++);
+      return m;
     }
-    return false;
-  }, false};
+    fc.stop();
+    return {};
+  }};
 
   MergeNode merge{g};
 

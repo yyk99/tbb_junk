@@ -71,7 +71,7 @@ void fig_16_25() {
   p.add_filter(sf);
   p.add_filter(mf);
   p.add_filter(wf);
-  p.run(tbb::task_scheduler_init::default_num_threads());
+  p.run(tbb::this_task_arena::max_concurrency());
   std::cout << "Done." << std::endl;
 }
 

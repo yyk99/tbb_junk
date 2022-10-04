@@ -27,7 +27,7 @@ SPDX-License-Identifier: MIT
 
 void doWork();
 
-const int M = 2*tbb::task_scheduler_init::default_num_threads();
+const int M = 2*tbb::this_task_arena::max_concurrency();
 
 void splitRunAndWait() {
   tbb::task_group tg;

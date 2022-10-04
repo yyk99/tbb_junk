@@ -34,9 +34,6 @@ namespace tbb {
 }
 #endif
 
-using std::index_sequence;
-using std::make_index_sequence;
-
 template <typename IntType>
 class counting_iterator {
   __TBB_STATIC_ASSERT(std::numeric_limits<IntType>::is_integer, "Cannot instantiate counting_iterator with a non-integer type");

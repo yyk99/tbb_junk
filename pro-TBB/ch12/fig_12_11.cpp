@@ -37,7 +37,7 @@ void fig_12_11(int M) {
   );
 }
 
-tbb::atomic<int> count;
+std::atomic<int> count;
 
 void doWork() {
   ++count;
@@ -46,14 +46,14 @@ void doWork() {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
 }
 
 int main() {
-  const int P = tbb::task_scheduler_init::default_num_threads();
+  const int P = tbb::this_task_arena::max_concurrency();
   double total_time_P = 0.0;
   const int L = 100000;
   double total_time_L = 0.0;

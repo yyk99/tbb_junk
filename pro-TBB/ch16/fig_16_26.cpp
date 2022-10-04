@@ -72,7 +72,7 @@ void fig_16_26() {
   p.add_filter(wf);
  
   std::thread t([&]() { 
-    p.run(tbb::task_scheduler_init::default_num_threads()); 
+    p.run(tbb::this_task_arena::max_concurrency()); 
   }); 
   
   while (wf.process_item() != tbb::thread_bound_filter::end_of_stream) 

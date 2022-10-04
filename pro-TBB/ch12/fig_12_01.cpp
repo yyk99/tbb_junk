@@ -29,7 +29,7 @@ void doWork();
 
 void fig_12_1() {
   tbb::spin_mutex m;
-  const int P = tbb::task_scheduler_init::default_num_threads();
+  const int P = tbb::this_task_arena::max_concurrency();
   
   tbb::parallel_for(0, P,
     [&m](int) {

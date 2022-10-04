@@ -52,10 +52,13 @@ double fig_17_10(int N, double *a[3], double *b[3], int gs) {
 
   std::vector<RType> stack;
   stack.push_back(RType(0, N, gs, 0, N, gs));
-  tbb::flow::source_node<FGTiledMsg> initialize{g, [&](FGTiledMsg& msg) -> bool {
+  tbb::flow::input_node<FGTiledMsg> initialize{g, [&](tbb::flow_control& fc) -> FGTiledMsg {
     if (i < 3) {
       if (stack.empty()) {
-        if (++i == 3) return false;
+        if (++i == 3) {
+          fc.stop();
+          return {};
+        }
         stack.push_back(RType(0, N, gs, 0, N, gs));
       }
       RType r = stack.back();
@@ -64,12 +67,13 @@ double fig_17_10(int N, double *a[3], double *b[3], int gs) {
         RType rhs(r, tbb::split());
         stack.push_back(rhs);
       }
-      msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
-      return true;
+      FGTiledMsg msg = {N, setBlock(r, a[i]), setTransposedBlock(r, b[i]), r};
+      return msg;
     } else {
-      return false;
+      fc.stop();
+      return {};
     }
-  }, false};
+  }};
   tbb::flow::function_node<FGTiledMsg, FGTiledMsg> transpose{g, tbb::flow::unlimited,
     [](const FGTiledMsg& msg) {
     double *a = msg.a, *b = msg.b;

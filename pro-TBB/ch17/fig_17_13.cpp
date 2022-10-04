@@ -34,13 +34,13 @@ void spinWaitForAtLeast(double sec) {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), 
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), 
   [](int) {
     spinWaitForAtLeast(0.001);
   });
 }
 
-tbb::atomic<int> bigObjectCount;
+std::atomic<int> bigObjectCount;
 int maxCount = 0;
 
 class BigObject {
@@ -49,13 +49,13 @@ class BigObject {
 public:
    BigObject() : id(-1) { } 
    BigObject(int i) : id(i) { 
-     int cnt = bigObjectCount.fetch_and_increment() + 1;
+     int cnt = bigObjectCount++ + 1;
      if (cnt > maxCount) 
        maxCount = cnt;
    }
    BigObject(const BigObject& b) : id(b.id) { }
    virtual ~BigObject() {
-     bigObjectCount.fetch_and_decrement();
+     bigObjectCount--;
    }
    int get_id() const {return id;}
 };

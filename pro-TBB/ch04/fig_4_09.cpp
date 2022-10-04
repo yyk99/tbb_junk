@@ -25,8 +25,10 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 
 #include <tbb/tbb.h>
-#include <pstl/execution>
-#include <pstl/algorithm>
+#include <execution>
+#include <algorithm>
+#include "counting_iterator.h"
+
 
 //
 // For best performance when using the Intel compiler use
@@ -36,7 +38,7 @@ SPDX-License-Identifier: MIT
 inline void fig_4_9(float * a, float * b, float * c) {
   const int M = 1024;
   std::for_each(
-    /* policy */ pstl::execution::par_unseq,
+    /* policy */ std::execution::par_unseq,
     /* first */  tbb::counting_iterator<int>(0),
     /* last */   tbb::counting_iterator<int>(M),
     [&a, &b, &c, M](int i) {
@@ -51,7 +53,7 @@ inline void fig_4_9(float * a, float * b, float * c) {
 }
 
 void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.001);
   });
@@ -138,10 +140,10 @@ void run_mxm_template(const Policy& p, const std::string& name) {
 }
 
 int main() {
-  run_mxm_template(pstl::execution::seq, "seq");
-  run_mxm_template(pstl::execution::unseq, "unseq");
+  run_mxm_template(std::execution::seq, "seq");
+  run_mxm_template(std::execution::par_unseq, "unseq");
   warmupTBB();
-  run_mxm_template(pstl::execution::par, "par");
+  run_mxm_template(std::execution::par, "par");
   warmupTBB();
   run_fig_4_9();
   std::cout << "Done." << std::endl;

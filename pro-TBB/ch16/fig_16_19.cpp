@@ -32,7 +32,7 @@ void doWork(double sec);
 class SourceFilter : public tbb::filter {
   std::vector<int>& data;
   double usec;
-  tbb::atomic<int> numItems;
+  std::atomic<int> numItems;
 public:
   SourceFilter(tbb::filter::mode m, std::vector<int>& v, double u) 
       : filter(m), data(v), usec(u) {
@@ -110,7 +110,7 @@ std::vector<int> makeVector(int N) {
 }
 
 static void warmupTBB() {
-  tbb::parallel_for(0, tbb::task_scheduler_init::default_num_threads(), [](int) {
+  tbb::parallel_for(0, tbb::this_task_arena::max_concurrency(), [](int) {
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);
   });
@@ -119,7 +119,7 @@ static void warmupTBB() {
 int main() {
   int N = 8000;
   int num_filters = 8;
-  int max_threads = tbb::task_scheduler_init::default_num_threads();
+  int max_threads = tbb::this_task_arena::max_concurrency();
   int num_tokens = 1;
 
   std::vector<double> spin_times = {1e-7, 1e-6, 1e-5, 1e-4};

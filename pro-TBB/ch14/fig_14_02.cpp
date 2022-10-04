@@ -50,7 +50,7 @@ void enqueueTask(const char *msg,
 }
 
 void fig_14_02() {
-  int P = tbb::task_scheduler_init::default_num_threads();
+  int P = tbb::this_task_arena::max_concurrency();
 
   enqueueTask("N", 0, 0.5);
   doWork(0.01);

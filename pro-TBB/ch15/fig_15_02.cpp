@@ -29,7 +29,7 @@ SPDX-License-Identifier: MIT
 int main(int argc, char** argv) {
   int n = 1000;
   int nth = 4;
-  tbb::task_scheduler_init init{nth};
+  //tbb::task_scheduler_init init{nth};
 
   std::vector<int> data(n);
   data[500] = -2;

@@ -45,15 +45,16 @@ double fig_17_9(int N, double *a[3], double *b[3]) {
   tbb::tick_count t0 = tbb::tick_count::now();
   tbb::flow::graph g;
   int i = 0;
-  tbb::flow::source_node<FGMsg> initialize{g, [&](FGMsg& msg) -> bool {
+  tbb::flow::input_node<FGMsg> initialize{g, [&](tbb::flow_control& fc) -> FGMsg {
     if (i < 3) {
-      msg = {N, setArray(N, a[i]), setArray(N, b[i])};
+      FGMsg msg = {N, setArray(N, a[i]), setArray(N, b[i])};
       ++i;
-      return true;
+      return msg;
     } else {
-      return false; 
+      fc.stop();
+      return {};
     }
-  }, false};
+  }};
   tbb::flow::function_node<FGMsg, FGMsg> transpose{g, tbb::flow::unlimited,
     [](const FGMsg& msg) -> FGMsg {
       serialTranspose(msg.N, msg.a, msg.b);

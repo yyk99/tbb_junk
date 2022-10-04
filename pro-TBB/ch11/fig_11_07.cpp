@@ -28,10 +28,10 @@ SPDX-License-Identifier: MIT
 void run_test();
 
 void fig_11_7() {
-  const int P = tbb::task_scheduler_init::default_num_threads();
+  const int P = tbb::this_task_arena::max_concurrency();
   for (int i = 1; i <= P; ++i) {
     tbb::tick_count t0 = tbb::tick_count::now();
-    tbb::task_scheduler_init init(i);
+    //tbb::task_scheduler_init init(i);
     run_test();
     auto sec = (tbb::tick_count::now() - t0).seconds(); 
     std::cout << "Test using " << i << " threads took "
@@ -40,7 +40,7 @@ void fig_11_7() {
 }
 
 void run_test() { 
-  const int N = 10*tbb::task_scheduler_init::default_num_threads();
+  const int N = 10*tbb::this_task_arena::max_concurrency();
   tbb::parallel_for(0, N, [](int) { 
     tbb::tick_count t0 = tbb::tick_count::now();
     while ((tbb::tick_count::now() - t0).seconds() < 0.01);

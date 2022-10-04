@@ -27,7 +27,7 @@ SPDX-License-Identifier: MIT
 #include <tbb/tbb.h>
 
 void fig_17_19() {
-  tbb::task_scheduler_init init{8};
+  //tbb::task_scheduler_init init{8};
   tbb::task_arena a2{2};
   tbb::task_arena a4{4};
   
