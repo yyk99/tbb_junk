@@ -1,9 +1,15 @@
 # tbb_junk
 Source code and examples for TBB
 
-cmake .. -DCMAKE_CXX_COMPILER=icc
+1. Linux intel compiler (PRO-TBB)
 
-cmake .. -DCMAKE_CXX_COMPILER=clang++ -DBUILD_PRO=ON
+$ . ~/intel/sw_dev_tools/bin/iccvars.sh intel64
+$ . ~/intel/sw_dev_tools/bin/pstlvars.sh intel64
+$ cmake .. -DCMAKE_CXX_COMPILER=icc -DBUILD_PRO=ON
+
+2. 
+
+$ cmake .. -DCMAKE_CXX_COMPILER=clang++ -DBUILD_PRO=ON
 
 Required:
 MinGW:
