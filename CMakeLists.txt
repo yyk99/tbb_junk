@@ -41,15 +41,21 @@ endif()
 list(APPEND tbbmalloc_required
   fig_B_48_fixed_pool.cpp
   fig_B_48_memory_pool.cpp
+  fig_7_15and16and17.cpp
+)
+
+list(APPEND hwloc_required
+  fig_20_06.cpp
+  fig_20_10.cpp
 )
 
 macro (add_fig directory)
   file(GLOB source_files "${directory}/*.cpp")
   #  list(REMOVE_ITEM ${source_files} pro-TBB/ch02/lodepng.h  pro-TBB/ch03/lodepng.h )
   foreach(cpp ${source_files})
-    get_filename_component(dir ${cpp} DIRECTORY) 
-    get_filename_component(dir ${dir} NAME) 
-    get_filename_component(prog ${cpp} NAME_WE) 
+    get_filename_component(dir ${cpp} DIRECTORY)
+    get_filename_component(dir ${dir} NAME)
+    get_filename_component(prog ${cpp} NAME_WE)
     get_filename_component(src ${cpp} NAME)
     if(src IN_LIST skip_source)
       continue()
@@ -62,7 +68,14 @@ macro (add_fig directory)
     if (src IN_LIST tbbmalloc_required)
       target_link_libraries(${exe_name} PRIVATE TBB::tbbmalloc)
     endif()
+    if (src IN_LIST hwloc_required)
+      target_link_libraries(${exe_name} PRIVATE hwloc)
+    endif()
     target_compile_features(${exe_name} PRIVATE cxx_std_11)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      target_compile_options(${exe_name} PRIVATE "-Wno-deprecated-declarations")
+    endif()
+    target_compile_definitions(${exe_name} PRIVATE "-DTBB_SUPPRESS_DEPRECATED_MESSAGES=1")
     set_target_properties(${exe_name}
       PROPERTIES FOLDER "${dir}"
     )

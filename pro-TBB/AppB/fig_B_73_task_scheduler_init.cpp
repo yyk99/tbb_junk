@@ -23,6 +23,7 @@ SPDX-License-Identifier: MIT
 */
 
 #include <tbb/task_scheduler_init.h>
+#include <cstdio>
 
 #define XYZZY(FLAG) \
   printf(FLAG " default threads = %d; ", \
