@@ -13,6 +13,10 @@ find_package(TBB REQUIRED)
 
 option(BUILD_PRO "Build with pro-TBB" OFF)
 
+if (NOT BUILD_PRO)
+  find_package(oneDPL REQUIRED)
+endif()
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
@@ -65,6 +69,7 @@ macro (add_fig directory)
 
     add_executable(${exe_name} ${cpp})
     target_link_libraries(${exe_name} PRIVATE TBB::tbb)
+    target_link_libraries(${exe_name} PRIVATE oneDPL)
     if (src IN_LIST tbbmalloc_required)
       target_link_libraries(${exe_name} PRIVATE TBB::tbbmalloc)
     endif()

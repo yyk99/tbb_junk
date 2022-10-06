@@ -25,13 +25,8 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 #include <vector>
 #include <tbb/tbb.h>
-#if __has_include(<pstl/algorithm>)
-#include <pstl/algorithm>
-#include <pstl/execution>
-#else
-#   include <algorithm>
-#   include <execution>
-#endif
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/execution>
 #include "ch01.h"
 
 using ImagePtr = std::shared_ptr<ch01::Image>;

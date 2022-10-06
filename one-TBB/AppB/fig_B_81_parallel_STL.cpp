@@ -33,9 +33,9 @@ std::vector<int> v;
 // parallel execution policy of ‘par’ (parallel)
 // can be added easily as follows:
 #include <algorithm>
-#include <execution> 
-//#include <pstl/algorithm>  // because of std::sort
-using namespace std::execution; // vs. std::execution
+#include <oneapi/dpl/execution> 
+#include <oneapi/dpl/algorithm>  // because of std::sort
+using namespace oneapi::dpl::execution; // vs. std::execution
 int main() {
   sort(par, v.begin(), v.end());
   return 0;

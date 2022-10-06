@@ -29,7 +29,11 @@ SPDX-License-Identifier: MIT
 
 int main() { 
   std::vector<std::string> v = { " Hello ", " Parallel STL! " };
-  std::for_each(std::execution::par, v.begin(), v.end(),
+  std::for_each(
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+    std::execution::par, 
+#endif
+    v.begin(), v.end(),
     [](std::string& s) { std::cout << s << std::endl; }
   ); 
   return 0;

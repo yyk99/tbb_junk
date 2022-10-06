@@ -12,7 +12,7 @@ Source code and examples for TBB
 	$ cmake .. -DCMAKE_CXX_COMPILER=clang++ -DBUILD_PRO=ON
 
 3. Windows
-	$ cmake .. -DCMAKE_PREFIX_PATH=C:/opt/oneTBB/vs2019/lib/cmake=
+	$ cmake .. -DCMAKE_PREFIX_PATH=C:/opt/oneTBB/vs2019/lib/cmake
 
 Required:
 MinGW:
