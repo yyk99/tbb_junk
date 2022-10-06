@@ -26,11 +26,9 @@ SPDX-License-Identifier: MIT
 #include <limits>
 #include <math.h>
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
-#include <numeric>
-
-#include "counting_iterator.h"
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/numeric>
 
 //
 // For best performance when using the Intel compiler use
@@ -42,19 +40,19 @@ const int num_intervals = 1<<22;
 
 float fig_4_13() {
   constexpr const float dx = 1.0 / num_intervals;
-  float sum = (float)std::transform_reduce(
-    /* policy */ std::execution::par_unseq,
-    /* first */ tbb::counting_iterator<int>(0),
-    /* last */  tbb::counting_iterator<int>(num_intervals),
-    /* init = */ 0.0,
+  float sum = std::transform_reduce(
+    /* policy */ dpl::execution::par_unseq,
+    /* first */ dpl::counting_iterator<int>(0),
+    /* last */  dpl::counting_iterator<int>(num_intervals),
+    /* init = */ 0.0F,
     /* reduce */
     [](float x, float y) -> float {
       return x + y;
     },
     /* transform */
     [=](int i) -> float {
-      float x = float((i + 0.5)*dx);
-      float h = float(sqrt(1 - x*x));
+      float x = static_cast<float>((i + 0.5)*dx);
+      float h = sqrt(1 - x*x);
       return h*dx;
     }
   );
@@ -85,16 +83,16 @@ float pi_template(const Policy& p) {
   constexpr const float dx = 1.0 / num_intervals;
   float sum = std::transform_reduce(
     /* policy */ p,
-    /* first */ tbb::counting_iterator<int>(0),
-    /* last */  tbb::counting_iterator<int>(num_intervals),
-    /* init = */ 0.0,
+    /* first */ dpl::counting_iterator<int>(0),
+    /* last */  dpl::counting_iterator<int>(num_intervals),
+    /* init = */ 0.0F,
     /* reduce */
     [](float x, float y) -> float {
       return x + y;
     },
     /* transform */
     [=](int i) -> float {
-      float x = (i + 0.5)*dx;
+      float x = static_cast<float>((i + 0.5)*dx);
       float h = sqrt(1 - x*x);
       return h*dx;
     }
@@ -117,10 +115,10 @@ void run_pi_template(const Policy& p, const std::string& name) {
 }
 
 int main() {
-  run_pi_template(std::execution::seq, "seq");
-  run_pi_template(std::execution::par_unseq, "unseq"); // TODO:
-  run_pi_template(std::execution::par, "par");
-  run_pi_template(std::execution::par_unseq, "par_unseq");
+  run_pi_template(dpl::execution::seq, "seq");
+  run_pi_template(dpl::execution::unseq, "unseq");
+  run_pi_template(dpl::execution::par, "par");
+  run_pi_template(dpl::execution::par_unseq, "par_unseq");
   run_fig_4_13();
   std::cout << "Done." << std::endl;
   return 0;

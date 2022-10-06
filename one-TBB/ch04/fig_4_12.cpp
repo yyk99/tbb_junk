@@ -26,9 +26,9 @@ SPDX-License-Identifier: MIT
 #include <vector>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
-#include <numeric>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/numeric>
 
 //
 // For best performance when using the Intel compiler use
@@ -50,10 +50,10 @@ void fig_4_12_a() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    auto v = std::transform_reduce(std::execution::par,
+    auto v = std::transform_reduce(dpl::execution::par,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0,
+      /* init */ 0.0f,
       /* op1, the reduce */
       [](float ae, float be) -> float {
         return ae + be;
@@ -64,10 +64,10 @@ void fig_4_12_a() {
       }
     );
     accumulateTime(t0, 3);
-    v += std::transform_reduce(std::execution::par_unseq,
+    v += std::transform_reduce(dpl::execution::par_unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0,
+      /* init */ 0.0f,
       /* op1, the reduce */
       [](float ae, float be) -> float {
         return ae + be;
@@ -83,10 +83,10 @@ void fig_4_12_a() {
       v += a[i]*b[i];
     }
     accumulateTime(t0, 0);
-    v += std::transform_reduce(std::execution::seq,
+    v += std::transform_reduce(dpl::execution::seq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0,
+      /* init */ 0.0f,
       /* op1, the reduce */
       [](float ae, float be) -> float {
         return ae + be;
@@ -97,10 +97,10 @@ void fig_4_12_a() {
       }
     );
     accumulateTime(t0, 1);
-    v += std::transform_reduce(std::execution::par_unseq, // TODO:
+    v += std::transform_reduce(dpl::execution::unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0,
+      /* init */ 0.0f,
       /* op1, the reduce */
       [](float ae, float be) -> float {
         return ae + be;
@@ -128,16 +128,16 @@ void fig_4_12_b() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    auto v = std::transform_reduce(std::execution::par,
+    auto v = std::transform_reduce(dpl::execution::par,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0
+      /* init */ 0.0f
     );
     accumulateTime(t0, 3);
-    v += std::transform_reduce(std::execution::par_unseq,
+    v += std::transform_reduce(dpl::execution::par_unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0
+      /* init */ 0.0f
     );
     accumulateTime(t0, 4);
 #pragma novector
@@ -145,16 +145,16 @@ void fig_4_12_b() {
       v += a[i]*b[i];
     }
     accumulateTime(t0, 0);
-    v += std::transform_reduce(std::execution::seq,
+    v += std::transform_reduce(dpl::execution::seq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0
+      /* init */ 0.0f
     );
     accumulateTime(t0, 1);
-    v += std::transform_reduce(std::execution::par_unseq, // TODO:
+    v += std::transform_reduce(dpl::execution::unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 range */ b.begin(),
-      /* init */ 0.0
+      /* init */ 0.0f
     );
     accumulateTime(t0, 2);
     if (v != num_versions * n) 

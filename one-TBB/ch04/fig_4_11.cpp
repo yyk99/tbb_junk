@@ -26,9 +26,9 @@ SPDX-License-Identifier: MIT
 #include <vector>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
-#include <numeric>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/numeric>
 
 //
 // For best performance when using the Intel compiler use
@@ -50,18 +50,18 @@ void fig_4_11() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    float sum = std::reduce(std::execution::par, a.begin(), a.end());
+    float sum = std::reduce(dpl::execution::par, a.begin(), a.end());
     accumulateTime(t0, 3);
-    sum += std::reduce(std::execution::par_unseq, a.begin(), a.end());
+    sum += std::reduce(dpl::execution::par_unseq, a.begin(), a.end());
     accumulateTime(t0, 4);
 #pragma novector
     for (int i = 0; i < n; ++i) {
       sum += a[i];
     }
     accumulateTime(t0, 0);
-    sum += std::reduce(std::execution::seq, a.begin(), a.end());
+    sum += std::reduce(dpl::execution::seq, a.begin(), a.end());
     accumulateTime(t0, 1);
-    sum += std::reduce(std::execution::par_unseq, a.begin(), a.end());
+    sum += std::reduce(dpl::execution::unseq, a.begin(), a.end());
     accumulateTime(t0, 2);
     if (sum != num_versions * n) 
       std::cout << "ERROR: sum is not correct" 
@@ -80,7 +80,7 @@ void fig_4_11_with_lambda() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    auto sum = std::reduce(std::execution::par,
+    auto sum = std::reduce(dpl::execution::par,
       /* in1 range */ a.begin(), a.end(),
       /* init */ 0.0,
       [](float ae, float be) -> float {
@@ -88,7 +88,7 @@ void fig_4_11_with_lambda() {
       }
     );
     accumulateTime(t0, 3);
-    sum += std::reduce(std::execution::par_unseq,
+    sum += std::reduce(dpl::execution::par_unseq,
       /* in1 range */ a.begin(), a.end(),
       /* init */ 0.0,
       [](float ae, float be) -> float {
@@ -101,7 +101,7 @@ void fig_4_11_with_lambda() {
       sum += a[i];
     }
     accumulateTime(t0, 0);
-    sum += std::reduce(std::execution::seq,
+    sum += std::reduce(dpl::execution::seq,
       /* in1 range */ a.begin(), a.end(),
       /* init */ 0.0,
       [](float ae, float be) -> float {
@@ -109,7 +109,7 @@ void fig_4_11_with_lambda() {
       }
     );
     accumulateTime(t0, 1);
-    sum += std::reduce(std::execution::par_unseq, // C++20
+    sum += std::reduce(dpl::execution::unseq,
       /* in1 range */ a.begin(), a.end(),
       /* init */ 0.0,
       [](float ae, float be) -> float {

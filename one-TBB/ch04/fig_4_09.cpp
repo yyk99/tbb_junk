@@ -25,10 +25,8 @@ SPDX-License-Identifier: MIT
 #include <iostream>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
-#include "counting_iterator.h"
-
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
 
 //
 // For best performance when using the Intel compiler use
@@ -38,9 +36,9 @@ SPDX-License-Identifier: MIT
 inline void fig_4_9(float * a, float * b, float * c) {
   const int M = 1024;
   std::for_each(
-    /* policy */ std::execution::par_unseq,
-    /* first */  tbb::counting_iterator<int>(0),
-    /* last */   tbb::counting_iterator<int>(M),
+    /* policy */ dpl::execution::par_unseq,
+    /* first */  dpl::counting_iterator<int>(0),
+    /* last */   dpl::counting_iterator<int>(M),
     [&a, &b, &c, M](int i) {
       for (int j = 0; j < M; ++j) {
         int c_index = i*M + j;
@@ -68,10 +66,10 @@ void run_fig_4_9() {
   float *c_expected = new float[MxM];
 
   // init arrays
-  std::fill(a, a + MxM, 1.0);
-  std::fill(b, b + MxM, 1.0);
-  std::fill(c, c + MxM, 0.0);
-  std::fill(c_expected, c_expected + MxM, M);
+  std::fill(a, a + MxM, 1.0f);
+  std::fill(b, b + MxM, 1.0f);
+  std::fill(c, c + MxM, 0.0f);
+  std::fill(c_expected, c_expected + MxM, static_cast<float>(M));
 
   double version_time = 0.0;
   warmupTBB();
@@ -95,8 +93,8 @@ template <int M, typename Policy>
 inline void mxm_template(const Policy& p, float * a, float * b, float * c) {
   std::for_each(
     /* policy */ p,
-    /* first */ tbb::counting_iterator<int>(0),
-    /* last */  tbb::counting_iterator<int>(M),
+    /* first */ dpl::counting_iterator<int>(0),
+    /* last */  dpl::counting_iterator<int>(M),
     [&a, &b, &c](int i) {
 #pragma novector
       for (int j = 0; j < M; ++j) {
@@ -120,10 +118,10 @@ void run_mxm_template(const Policy& p, const std::string& name) {
   float *c_expected = new float[MxM];
 
   // init arrays
-  std::fill(a, a + MxM, 1.0);
-  std::fill(b, b + MxM, 1.0);
-  std::fill(c, c + MxM, 0.0);
-  std::fill(c_expected, c_expected + MxM, M);
+  std::fill(a, a + MxM, 1.0f);
+  std::fill(b, b + MxM, 1.0f);
+  std::fill(c, c + MxM, 0.0f);
+  std::fill(c_expected, c_expected + MxM, static_cast<float>(M));
 
   double version_time = 0.0;
   warmupTBB();
@@ -140,10 +138,10 @@ void run_mxm_template(const Policy& p, const std::string& name) {
 }
 
 int main() {
-  run_mxm_template(std::execution::seq, "seq");
-  run_mxm_template(std::execution::par_unseq, "unseq");
+  run_mxm_template(dpl::execution::seq, "seq");
+  run_mxm_template(dpl::execution::unseq, "unseq");
   warmupTBB();
-  run_mxm_template(std::execution::par, "par");
+  run_mxm_template(dpl::execution::par, "par");
   warmupTBB();
   run_fig_4_9();
   std::cout << "Done." << std::endl;

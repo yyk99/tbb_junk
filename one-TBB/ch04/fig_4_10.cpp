@@ -26,8 +26,8 @@ SPDX-License-Identifier: MIT
 #include <vector>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
 
 //
 // For best performance when using the Intel compiler use
@@ -48,7 +48,7 @@ void fig_4_10() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    std::transform(std::execution::par,
+    std::transform(dpl::execution::par,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -57,7 +57,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 4);
-    std::transform(std::execution::par_unseq,
+    std::transform(dpl::execution::par_unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -86,7 +86,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 1);
-    std::transform(std::execution::seq,
+    std::transform(dpl::execution::seq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -95,7 +95,7 @@ void fig_4_10() {
       }
     );
     accumulateTime(t0, 2);
-    std::transform(std::execution::par_unseq,
+    std::transform(dpl::execution::unseq,
       /* in1 range */ a.begin(), a.end(),
       /* in2 first */ b.begin(), 
       /* out first */ a.begin(),
@@ -131,7 +131,7 @@ void dumpTimes() {
 }
 
 void validateResults(int num_trials, const std::vector<float>& a) {
-   float r = num_trials * num_versions * 9 + 1;
+   float r = static_cast<float>(num_trials * num_versions * 9 + 1);
    for (auto& i : a ) {
      if (r != i) {
        std::cout << "ERROR: results did not match" << std::endl;

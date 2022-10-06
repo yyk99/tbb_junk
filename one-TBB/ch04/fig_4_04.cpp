@@ -26,8 +26,8 @@ SPDX-License-Identifier: MIT
 #include <vector>
 
 #include <tbb/tbb.h>
-#include <execution>
-#include <algorithm>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
 
 //
 // For best performance when using the Intel compiler use
@@ -50,12 +50,12 @@ void fig_4_4() {
   for (int t = 0; t < num_trials; ++t) {
     warmupTBB();
     t0 = tbb::tick_count::now();
-    std::for_each(std::execution::par, v.begin(), v.end(), 
+    std::for_each(dpl::execution::par, v.begin(), v.end(), 
       [](float& i) {
         f(i);
       });
     accumulateTime(t0, 4);
-    std::for_each(std::execution::par_unseq, v.begin(), v.end(), 
+    std::for_each(dpl::execution::par_unseq, v.begin(), v.end(), 
       [](float& i) {
         f(i);
       });
@@ -75,12 +75,12 @@ void fig_4_4() {
         f(i);
       });
     accumulateTime(t0, 1);
-    std::for_each(std::execution::seq, v.begin(), v.end(), 
+    std::for_each(dpl::execution::seq, v.begin(), v.end(), 
       [](float& i) {
         f(i);
       });
     accumulateTime(t0, 2);
-    std::for_each(std::execution::par_unseq, v.begin(), v.end(), // TODO:
+    std::for_each(dpl::execution::unseq, v.begin(), v.end(), 
       [](float& i) {
         f(i);
       });
@@ -109,7 +109,7 @@ void dumpTimes() {
 }
 
 void validateResults(int num_trials, const std::vector<float>& v) {
-   float r = num_trials * num_versions;
+   float r = static_cast<float>(num_trials * num_versions);
    for (auto& i : v ) {
      if (r != i) {
        std::cout << "ERROR: results did not match" << std::endl;
