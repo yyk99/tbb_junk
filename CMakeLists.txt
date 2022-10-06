@@ -42,6 +42,15 @@ if(NOT OpenCL_FOUND)
     )
 endif()
 
+include(CheckIncludeFiles)
+CHECK_INCLUDE_FILES("sched.h" SCHED_H_FOUND)
+message(STATUS "SCHED_H_FOUND=${SCHED_H_FOUND}")
+if (NOT SCHED_H_FOUND)
+  list(APPEND skip_source
+    fig_13_01.cpp
+    )
+endif()
+
 list(APPEND tbbmalloc_required
   fig_B_48_fixed_pool.cpp
   fig_B_48_memory_pool.cpp
